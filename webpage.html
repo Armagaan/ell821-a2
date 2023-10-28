@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+    <head>
+        <title>A2 - BuroujArmgaan</title>
+        <meta charset="utf-8" />
+
+        <script src="https://cdn.jsdelivr.net/npm/vega@5.25.0"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.16.0"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.22.2"></script>
+
+        <style media="screen">
+            /* Add space between Vega-Embed links  */
+            .vega-actions a {
+            margin-right: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 style="font-family: Arial;">Assignment #2</h1>
+        <p style="font-family: Arial;">Burouj Armgaan, 2022CSZ8001</p>
+        <!-- Container for the visualization -->
+        <div id="plots"></div>
+
+        <script>
+            const schema = "https://vega.github.io/schema/vega-lite/v5.json";
+            const data = "data.json";
+
+            var plots = {
+                $schema: schema,
+                data: {url: data},
+                vconcat: [
+                    {
+                        hconcat: [
+                            // Create a Bar Graph showing Rep vs Total. Sort the data by Total.
+                            {
+                                width: 400,
+                                mark: "bar",
+                                title: "Total sales under each rep",
+                                encoding: {
+                                    x: {field: "Rep", type: "nominal", sort: "-y"},
+                                    y: {field: "Total", type: "quantitative", aggregate: "sum"}
+                                }
+                            },
+                            // Create a Pie Chart showing Item and Units.
+                            {
+                                mark: "arc",
+                                title: "Total units per item",
+                                encoding: {
+                                    theta: {field: "Units", type: "quantitative", aggregate: "sum", stack: true},
+                                    // order: {field: "Item", type: "quantitative", sort: "descending"},
+                                    color: {field: "Item", type: "nominal", legend: null}
+                                },
+                                layer: [
+                                    {
+                                        mark: {type: "arc", outerRadius: 100}
+                                    },
+                                    {
+                                        mark: {type: "text", radius: 50, fill: "black"},
+                                        encoding: {text: {field: "Units", type: "quantitative", aggregate: "sum"}}
+                                    },
+                                    {
+                                        mark: {type: "text", radius: 120},
+                                        encoding: {text: {field: "Item", type: "nominal"}}
+                                    }
+                                ]
+                            },
+                            // Create a view showing the correlation between Units and Unit Cost. Color by Item.
+                            {
+                                width: 400,
+                                mark: {type: "point", clip: true},
+                                title: ["Correlation (outliers clipped)"],
+                                encoding: {
+                                    x: {field: "Units", type: "quantitative"},
+                                    y: {field: "Unit Cost", type: "quantitative", scale: {"domain": [0, 30]}},
+                                    color: {field: "Item", legend: "Item"}
+                                }
+                            }
+                        ],
+                        resolve: {
+                            legend: {
+                            color: "independent"
+                            }
+                        }
+                    },
+                    {
+                        hconcat: [
+                            // Create a line graph showing how the Total varied over time.
+                            {
+                                width: 700,
+                                mark: "line",
+                                title: "Variation of total over time",
+                                encoding: {
+                                    x: {field: "OrderDate", type: "temporal", timeUnit: "binnedmonthyear"},
+                                    y: {field: "Total", type: "quantitative", aggregate: "mean"}
+                                }
+                            },
+                            // Create a Histogram of the Units. Add an overlay of the global mean.
+                            {
+                                width: 350,
+                                layer: [
+                                    {
+                                        title: ["Units (red line: global mean)"],
+                                        mark: "bar",
+                                        encoding: {
+                                            x: {field: "Units", type: "quantitative", bin: true},
+                                            y: {aggregate: "count"}
+                                        }
+                                    },
+                                    {
+                                        title: "Global mean",
+                                        mark: "rule",
+                                        encoding: {
+                                            x: {field: "Units", aggregate: "mean"},
+                                            color: {"value": "red"},
+                                            size: {"value": 3}
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+                }
+
+            // Embed the visualization in the container with id `vis`
+            vegaEmbed("#plots", plots);
+
+        </script>
+    </body>
+</html>
